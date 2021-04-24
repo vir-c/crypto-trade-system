@@ -1,0 +1,27 @@
+{
+  "name": "crypto-trade-system",
+  "version": "1.0.0",
+  "description": "A crypto trading bot system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vir-c/crypto-trade-system.git"
+  },
+  "author": "virc <icbrvdr@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vir-c/crypto-trade-system/issues"
+  },
+  "homepage": "https://github.com/vir-c/crypto-trade-system#readme",
+  "dependencies": {
+    "lerna": "^4.0.0",
+    "ramda": "^0.27.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.41",
+    "prettier": "2.2.1"
+  }
+}
