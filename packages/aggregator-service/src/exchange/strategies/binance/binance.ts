@@ -1,4 +1,4 @@
-import { IExchange, TickerData } from '../../exchange.interface'
+import { IExchange, PriceData } from '../../exchange.interface'
 import axios from 'axios'
 import util from 'util'
 
@@ -12,8 +12,8 @@ const config = {
 export class Binance implements IExchange {
     async getTickers() {
         try {
-            const priceList: [TickerData] = await axios.get(config.base + config.endpoints.ticker24hr)
-            return priceList
+            const { data }: { data: [PriceData] } = await axios.get(config.base + config.endpoints.ticker24hr)
+            return data
         } catch (error) {
             console.log('Failed to fetch ticker data for Binance...', util.inspect(error, { depth: null }))
         }

@@ -7,4 +7,5 @@ export const config = {
             database: process.env.MONGODB_NAME,
         },
     },
+    cronSchedule: '1,11,21,31,41,51 * * * *', // https://crontab.guru/ “At minute 1, 11, 21, 31, 41, and 51.”
 }

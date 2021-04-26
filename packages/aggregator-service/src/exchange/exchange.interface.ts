@@ -1,11 +1,11 @@
 export interface IExchange {
-    getTickers: () => Promise<[TickerData]>
+    getTickers: () => Promise<[PriceData]>
 }
 
-export type TickerData = {
+export type PriceData = {
     symbol: string
     lastPrice: number
-    priceChange?: number
+    priceChangePercent?: number
     avgPrice?: number
     volume?: number
     quoteVolume?: number

@@ -1,11 +1,12 @@
 import { BinanceExchange, ExchangeAdaptor } from './exchange'
 import * as R from 'ramda'
-import { TickerData } from './exchange/exchange.interface'
+import { PriceData } from './exchange/exchange.interface'
 import { Log } from '../../../shared/node'
+import db from './db'
 
 const binanceExchange = new BinanceExchange()
 const exchangeAdaptor = new ExchangeAdaptor(binanceExchange)
-const isUSDT = (x: TickerData) => x.symbol.toUpperCase().includes('USDT')
+const isUSDT = (x: PriceData) => x.symbol.toUpperCase().substr(-4) === 'USDT'
 const filterUSDTPairs = R.filter(isUSDT)
 
 export async function main() {
@@ -17,8 +18,12 @@ export async function main() {
         const priceListUSD = filterUSDTPairs(priceList)
 
         //add results to db
+        await db.controller.ticker.addTicker({
+            exchange: 'binance',
+            priceList: priceListUSD,
+        })
 
-        //notify decision-maker package
+        console.log('Ticker added successful for ', new Date().toUTCString())
     } catch (error) {
         const dateTime = new Date().toString()
         Log.error(error, `Failed to execute main at ${dateTime}... `)
