@@ -1,3 +1,4 @@
+import './env'
 import { Log } from '../../../shared/node'
 import { config } from './config'
 import db from './db'

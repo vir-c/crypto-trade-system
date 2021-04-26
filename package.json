@@ -4,7 +4,9 @@
   "description": "A crypto trading bot system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bootstrap": "lerna bootstrap",
+    "postinstall": "npm run bootstrap",
+    "start": "lerna run start --stream"
   },
   "repository": {
     "type": "git",
