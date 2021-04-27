@@ -1,14 +1,10 @@
 {
-  "name": "aggregator-service",
+  "name": "decider-service",
   "version": "0.0.0",
-  "description": "collects crypto price data from exchange",
+  "description": "> TODO: description",
   "author": "virc <icbrvdr@gmail.com>",
-  "homepage": "https://github.com/vir-c/crypto-trade-system/tree/main/packages/aggregator-service#readme",
+  "homepage": "https://github.com/vir-c/crypto-trade-system/tree/main/packages/decider-service#readme",
   "license": "ISC",
-  "main": "dist/index.js",
-  "files": [
-    "lib"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vir-c/crypto-trade-system.git"
