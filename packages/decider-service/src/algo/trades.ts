@@ -13,18 +13,18 @@ const percentchange = (base: number, now: number) => ((now - base) / base) * 100
 
 // get weights array
 const w12 = emaAlgo.getWeights(12)
-const w96 = emaAlgo.getWeights(96)
+const w84 = emaAlgo.getWeights(84)
 
 /**
- * calculates WMA changes between 12 (2 hours) and 96 (16 hours)
+ * calculates WMA changes between 12 (2 hours) and 84 (14 hours)
  * @param {number[]} priceList
  * @returns {number}
  */
 function calWMAChange(priceList: number[]): number {
     //ema for 2 hrs
     const ema12 = emaAlgo.getWMA(priceList, w12)
-    const ema96 = emaAlgo.getWMA(priceList, w96)
-    return percentchange(ema96, ema12)
+    const ema84 = emaAlgo.getWMA(priceList, w84)
+    return percentchange(ema84, ema12)
 }
 
 /**
@@ -83,7 +83,7 @@ function getGoodTrades(tickers: ITicker[], assets: string[]): symbolEMAChange[] 
  * @returns {boolean}
  */
 function shouldSellAsset(tickers: ITicker[], symbol: string) {
-    return assetEMAChange(tickers, symbol) < -1.5
+    return assetEMAChange(tickers, symbol) < 0
 }
 
 export { getGoodTrades, shouldSellAsset }
