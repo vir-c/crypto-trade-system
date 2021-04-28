@@ -63,13 +63,14 @@ async function makeTrades(sellAssets: string[], buyAssets: string[], lastTicker:
 
     const sellTransactions = sellAssets.map((symbol) => sellAsset(symbol, getLastPrice(symbol)))
     const buyTransactions = buyAssets.map((symbol) => buyAsset(symbol, getLastPrice(symbol)))
-    const data = await Promise.all([...sellTransactions, ...buyTransactions])
-    console.log(data)
+    const earnings = await Promise.all([...sellTransactions, ...buyTransactions])
 
     await db.controller.holdings.addHoldings({
         assets: buyAssets,
-        totalPL: sum(data),
+        totalPL: sum(earnings),
     })
+
+    console.log(`Bought: ${buyAsset} and Sold ${sellAsset} at Profil/Loss ${sum(earnings)}`)
 }
 
 export { makeTrades }
