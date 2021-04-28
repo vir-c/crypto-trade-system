@@ -83,7 +83,7 @@ function getGoodTrades(tickers: ITicker[], assets: string[]): symbolEMAChange[] 
  * @returns {boolean}
  */
 function shouldSellAsset(tickers: ITicker[], symbol: string) {
-    return assetEMAChange(tickers, symbol) < -3
+    return assetEMAChange(tickers, symbol) < -1.5
 }
 
 export { getGoodTrades, shouldSellAsset }

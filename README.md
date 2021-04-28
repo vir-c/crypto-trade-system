@@ -23,4 +23,4 @@ decider-service analyses the ticker data saved in the database and executes the 
 6. get top 5 assets with highest WMA change
 
 ### Sell Algo
-WMA change < -3
+WMA change < -1.5
