@@ -4,9 +4,8 @@ import { IPrice, PriceSchema } from './price'
 export interface ITicker extends Document {
     exchange: string
     date?: Date
-    priceList: [IPrice]
+    priceList: IPrice[]
 }
-
 
 const TickerSchema = new Schema({
     exchange: String,
