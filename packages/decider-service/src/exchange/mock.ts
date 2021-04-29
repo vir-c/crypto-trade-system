@@ -70,7 +70,7 @@ async function makeTrades(sellAssets: string[], buyAssets: string[], lastTicker:
         totalPL: sum(earnings),
     })
 
-    console.log(`Bought: ${buyAsset} and Sold ${sellAsset} at Profil/Loss ${sum(earnings)}`)
+    console.log(`Bought: ${buyAssets} and Sold ${sellAssets} at Profil/Loss ${sum(earnings)}`)
 }
 
 export { makeTrades }
