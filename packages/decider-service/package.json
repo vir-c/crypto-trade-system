@@ -10,7 +10,8 @@
     "url": "git+https://github.com/vir-c/crypto-trade-system.git"
   },
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "backtest": "ts-node src/backtesting"
   },
   "bugs": {
     "url": "https://github.com/vir-c/crypto-trade-system/issues"

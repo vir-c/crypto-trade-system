@@ -1,7 +1,10 @@
 import { Log } from '../../../shared/node'
-import { getGoodTrades, shouldSellAsset } from './algo'
+import { createWMAStrategy, getGoodTrades, shouldSellAsset } from './algo'
 import db from './db'
 import { makeTrades, updateHoldings } from './exchange/mock'
+
+const buyWMAStrategy = createWMAStrategy(12, 84)
+const sellWMAStrategy = createWMAStrategy(12, 84)
 
 export async function main() {
     try {
@@ -10,22 +13,26 @@ export async function main() {
             db.controller.holdings.currentHoldings(),
         ])
 
-        const sellSymbols = currentHoldings?.assets.filter((sym) => shouldSellAsset(tickers, sym)) || []
+        const currentAssets = currentHoldings ? currentHoldings.assets : []
 
-        const buyTrades = getGoodTrades(tickers, currentHoldings ? currentHoldings.assets : [])
+        const sellSymbols = currentAssets.filter((sym) => shouldSellAsset(tickers, sym, sellWMAStrategy)) || []
+
+        const top10Symbols = getGoodTrades(tickers, buyWMAStrategy)
+
+        //ignore symbols that are held
+        const buyTrades = top10Symbols.filter((i) => !currentAssets.includes(i.symbol))
 
         //always maintain only 5 assets in holdings
-        const holdingsSize = currentHoldings?.assets?.length || 0
-        const buySize = 5 - holdingsSize + sellSymbols.length
+        const buySize = 5 - currentAssets.length + sellSymbols.length
         const buySymbols = buyTrades.slice(0, buySize).map((i) => i.symbol)
 
         if (buySymbols.length || sellSymbols.length) {
             const pl = await makeTrades(sellSymbols, buySymbols, tickers[0])
-            const holdSymbols = [
-                ...buySymbols,
-                ...(currentHoldings ? currentHoldings.assets : []).filter((s) => !sellSymbols.includes(s)),
-            ]
+
+            const holdSymbols = [...buySymbols, ...currentAssets.filter((s) => !sellSymbols.includes(s))]
+
             updateHoldings(holdSymbols, pl + (currentHoldings?.totalPL || 0))
+
             console.log(
                 `Bought: ${buySymbols} and Sold ${sellSymbols} at Profil/Loss ${pl}, current holdings are ${holdSymbols}`
             )

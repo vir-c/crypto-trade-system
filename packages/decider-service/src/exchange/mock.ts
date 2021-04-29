@@ -1,7 +1,6 @@
 import { pluck, sum } from 'ramda'
 import { symbolName } from 'typescript'
 import db from '../db'
-import holdingsController from '../db/controller/holdings.controller'
 import { ITicker, TradeType } from '../db/models'
 
 /**

@@ -11,7 +11,9 @@ For 6
 ]
 */
 
-const getWeightFn = (n) => (x) => 1 / (n * 4 + x)
+//const getWeightFn = (n) => (x) => 1 / (n * 4 + x)
+//ema
+const getWeightFn = (n) => (x) => (2 / (n + 1)) * Math.pow(1 - 2 / (n + 1), x)
 
 const getWeightsN = (n) => compose(map(getWeightFn(n)), range(0))(n)
 const divideBy = (s) => (x) => x / s //https://ramdajs.com/docs/#divide
@@ -34,7 +36,25 @@ function getWMA(nums: number[], ws: number[]): number {
     return sum(zipWith(multiply, nums, ws))
 }
 
-export default {
-    getWMA,
-    getWeights,
+const percentchange = (base: number, now: number) => ((now - base) / base) * 100
+
+export type WMAStrategy = (priceList: number[]) => number
+
+/**
+ * calculates WMA changes between 12 (2 hours) and 84 (14 hours)
+ * @param {number[]} priceList
+ * @returns {number}
+ */
+function createWMAStrategy(periodShort: number, periodLong: number): WMAStrategy {
+    //ema for 2 hrs
+    const wShort = getWeights(periodShort)
+    const wLong = getWeights(periodLong)
+
+    return (priceList: number[]) => {
+        const emaShort = getWMA(priceList, wShort)
+        const emaLong = getWMA(priceList, wLong)
+        return percentchange(emaLong, emaShort)
+    }
 }
+
+export { getWMA, getWeights, createWMAStrategy }
