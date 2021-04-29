@@ -25,7 +25,7 @@ export async function main() {
                 ...buySymbols,
                 ...(currentHoldings ? currentHoldings.assets : []).filter((s) => !sellSymbols.includes(s)),
             ]
-            updateHoldings(holdSymbols, pl)
+            updateHoldings(holdSymbols, pl + (currentHoldings?.totalPL || 0))
             console.log(
                 `Bought: ${buySymbols} and Sold ${sellSymbols} at Profil/Loss ${pl}, current holdings are ${holdSymbols}`
             )
