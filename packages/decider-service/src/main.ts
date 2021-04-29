@@ -1,7 +1,7 @@
 import { Log } from '../../../shared/node'
 import { getGoodTrades, shouldSellAsset } from './algo'
 import db from './db'
-import { makeTrades } from './exchange/mock'
+import { makeTrades, updateHoldings } from './exchange/mock'
 
 export async function main() {
     try {
@@ -20,7 +20,15 @@ export async function main() {
         const buySymbols = buyTrades.slice(0, buySize).map((i) => i.symbol)
 
         if (buySymbols.length || sellSymbols.length) {
-            await makeTrades(sellSymbols, buySymbols, tickers[0])
+            const pl = await makeTrades(sellSymbols, buySymbols, tickers[0])
+            const holdSymbols = [
+                ...buySymbols,
+                ...(currentHoldings ? currentHoldings.assets : []).filter((s) => !sellSymbols.includes(s)),
+            ]
+            updateHoldings(holdSymbols, pl)
+            console.log(
+                `Bought: ${buySymbols} and Sold ${sellSymbols} at Profil/Loss ${pl}, current holdings are ${holdSymbols}`
+            )
         }
     } catch (error) {
         const dateTime = new Date().toString()

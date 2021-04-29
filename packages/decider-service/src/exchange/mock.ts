@@ -1,6 +1,7 @@
-import { sum } from 'ramda'
+import { pluck, sum } from 'ramda'
 import { symbolName } from 'typescript'
 import db from '../db'
+import holdingsController from '../db/controller/holdings.controller'
 import { ITicker, TradeType } from '../db/models'
 
 /**
@@ -65,12 +66,17 @@ async function makeTrades(sellAssets: string[], buyAssets: string[], lastTicker:
     const buyTransactions = buyAssets.map((symbol) => buyAsset(symbol, getLastPrice(symbol)))
     const earnings = await Promise.all([...sellTransactions, ...buyTransactions])
 
-    await db.controller.holdings.addHoldings({
-        assets: buyAssets,
-        totalPL: sum(earnings),
-    })
-
-    console.log(`Bought: ${buyAssets} and Sold ${sellAssets} at Profil/Loss ${sum(earnings)}`)
+    return sum(earnings)
 }
 
-export { makeTrades }
+/**
+ *
+ */
+async function updateHoldings(assets: string[], pl: number) {
+    await db.controller.holdings.addHoldings({
+        assets: assets,
+        totalPL: pl,
+    })
+}
+
+export { makeTrades, updateHoldings }
