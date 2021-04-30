@@ -33,8 +33,12 @@ function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEM
     //for each symbol get ema percentage change
     const symbolEMAChangeList: symbolEMAChange[] = []
     for (let sym of top40Symbols) {
-        const symbolPriceList = getPriceListForSymbol(tickers, sym)
-        symbolEMAChangeList.push({ symbol: sym, wmaChange: assetEMAChange(symbolPriceList, AlgoStrategy) })
+        try{
+            const symbolPriceList = getPriceListForSymbol(tickers, sym)
+            symbolEMAChangeList.push({ symbol: sym, wmaChange: assetEMAChange(symbolPriceList, AlgoStrategy) })
+        }catch{
+            //ignore error
+        }
     }
 
     //filter trades that have wmaChange greater than 2%
