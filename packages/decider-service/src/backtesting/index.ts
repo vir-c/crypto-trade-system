@@ -7,18 +7,18 @@ type Holdings = { assets: Asset[]; totalPL: number }
 
 async function backtest() {
     //expo
-    //mongoexport --uri mongodb+srv://<username>@atlas-cluster-url.mongodb.net/<db-name> --collection <collection-name> --out <path-to-export>
+    //mongoexport --uri mongodb+srv://<username>:<password>@atlas-cluster-url.mongodb.net/<db-name> --collection <collection-name> --out <path-to-export>
     //read all inputs and create tickers array
     let tickers = await utils.getTickers('./src/backtesting/tickers.txt')
     //sort by time
     tickers = tickers.reverse() //.sort((a, b) => a.date.getTime() - b.date.getTime())
 
-    for (let i = 2; i <= 16; i++) {
-        for (let j = 1; j < i / 2; j++) {
-            const ws = [j * 6, i * 6]
+    for (let i = 1; i <= 4; i++) {
+        for (let j = 4; j <= 8; j++) {
+            const ws = [i * 6, i * j * 6]
 
             const buyStrategy = createWMAStrategy(ws[0], ws[1])
-            const sellStrategy = createWMAStrategy(ws[0] / 2, ws[1] / 2)
+            const sellStrategy = createWMAStrategy(ws[0], ws[1])
             const totalPL = runTest(tickers, buyStrategy, sellStrategy, ws[1])
             console.log(totalPL, ws[0], ws[1])
         }
@@ -29,7 +29,7 @@ function runTest(tickers: ITicker[], buyStrategy: WMAStrategy, sellStrategy: WMA
     //mock holdings
     const currholdings = mockHoldings()
 
-    for (let i = 400; i >= 0; i--) {
+    for (let i = 600; i >= 0; i--) {
         const currTickers = tickers.slice(i, i + size)
         mockSchdeuledTrade(currTickers, currholdings, buyStrategy, sellStrategy)
         //console.log(currholdings.getHoldings().totalPL)

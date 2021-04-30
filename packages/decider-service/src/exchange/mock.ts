@@ -12,7 +12,7 @@ async function sellAsset(symbol: string, lastPrice: number): Promise<number> {
     //get quantity for the asset
     const tradeData = await db.controller.trades.getLastAssetTrade(symbol)
 
-    const pl = (tradeData.price - lastPrice) * tradeData.quantity
+    const pl = (lastPrice - tradeData.price) * tradeData.quantity
 
     await db.controller.trades.addTrade({
         symbol: symbol,
