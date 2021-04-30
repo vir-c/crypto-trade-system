@@ -1,10 +1,10 @@
 import { Log } from '../../../shared/node'
-import { createWMAStrategy, getGoodTrades, shouldSellAsset } from './algo'
+import { createAlgoStrategy, getGoodTrades, shouldSellAsset } from './algo'
 import db from './db'
 import { makeTrades, updateHoldings } from './exchange/mock'
 
-const buyWMAStrategy = createWMAStrategy(12, 84)
-const sellWMAStrategy = createWMAStrategy(12, 84)
+const buyAlgoStrategy = createAlgoStrategy(12, 72, 36)
+const sellAlgoStrategy = createAlgoStrategy(9, 30)
 
 export async function main() {
     try {
@@ -15,12 +15,12 @@ export async function main() {
 
         const currentAssets = currentHoldings ? currentHoldings.assets : []
 
-        const sellSymbols = currentAssets.filter((sym) => shouldSellAsset(tickers, sym, sellWMAStrategy)) || []
+        const sellSymbols = currentAssets.filter((sym) => shouldSellAsset(tickers, sym, sellAlgoStrategy)) || []
 
-        const top10Symbols = getGoodTrades(tickers, buyWMAStrategy)
+        const top15Symbols = getGoodTrades(tickers, buyAlgoStrategy)
 
         //ignore symbols that are held
-        const buyTrades = top10Symbols.filter((i) => !currentAssets.includes(i.symbol))
+        const buyTrades = top15Symbols.filter((i) => !currentAssets.includes(i.symbol))
 
         //always maintain only 5 assets in holdings
         const buySize = 5 - currentAssets.length + sellSymbols.length

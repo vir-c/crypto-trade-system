@@ -1,4 +1,4 @@
-import { createWMAStrategy, getGoodTrades, shouldSellAsset, WMAStrategy } from '../algo'
+import { createAlgoStrategy, getGoodTrades, shouldSellAsset, AlgoStrategy } from '../algo'
 import { ITicker } from '../db/models'
 import utils from './utils'
 
@@ -13,19 +13,20 @@ async function backtest() {
     //sort by time
     tickers = tickers.reverse() //.sort((a, b) => a.date.getTime() - b.date.getTime())
 
-    for (let i = 1; i <= 4; i++) {
-        for (let j = 4; j <= 8; j++) {
-            const ws = [i * 6, i * j * 6]
+    // for (let i = 1; i <= 3; i++) {
+    //     for (let j = 6; j < 18; j = j + 2) {
+    const ws = [18, 84]
 
-            const buyStrategy = createWMAStrategy(ws[0], ws[1])
-            const sellStrategy = createWMAStrategy(ws[0], ws[1])
-            const totalPL = runTest(tickers, buyStrategy, sellStrategy, ws[1])
-            console.log(totalPL, ws[0], ws[1])
-        }
-    }
+    const buyAlgoStrategy = createAlgoStrategy(12, 72, 36)
+    const sellAlgoStrategy = createAlgoStrategy(9, 30)
+
+    const totalPL = runTest(tickers, buyAlgoStrategy, sellAlgoStrategy, ws[1])
+    console.log(totalPL, ws[0], ws[1])
+    //     }
+    // }
 }
 
-function runTest(tickers: ITicker[], buyStrategy: WMAStrategy, sellStrategy: WMAStrategy, size: number): number {
+function runTest(tickers: ITicker[], buyStrategy: AlgoStrategy, sellStrategy: AlgoStrategy, size: number): number {
     //mock holdings
     const currholdings = mockHoldings()
 
@@ -92,7 +93,7 @@ function mockSchdeuledTrade(tickers: ITicker[], currholdings, buyStrategy, sellS
         const holdSymbols = [...buySymbols, ...currentSymbols.filter((s) => !sellSymbols.includes(s))]
         const newAssets = getAssets(holdSymbols, currentAssets, getLastPrice)
         const pl = calculateProfit(sellSymbols, currentAssets, getLastPrice)
-        //console.log(`Sell: ${sellSymbols} at ${pl}`)
+        console.log(`Sell: ${sellSymbols} at ${pl}`)
         currholdings.updateHoldings(newAssets, pl + currholdings.getHoldings().totalPL)
     }
 }
@@ -100,7 +101,7 @@ function mockSchdeuledTrade(tickers: ITicker[], currholdings, buyStrategy, sellS
 function calculateProfit(sellSymbols: string[], currentAssets: Asset[], getLastPrice): number {
     return sellSymbols.reduce((sum, symbol) => {
         const buyPrice = currentAssets.find((a) => a.symbol == symbol).price
-        const pl = (getLastPrice(symbol) / buyPrice) * 100 - 100
+        const pl = (getLastPrice(symbol) / buyPrice - 1) * 100
         return sum + pl
     }, 0)
 }

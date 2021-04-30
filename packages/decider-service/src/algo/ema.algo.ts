@@ -38,23 +38,35 @@ function getWMA(nums: number[], ws: number[]): number {
 
 const percentchange = (base: number, now: number) => ((now - base) / base) * 100
 
-export type WMAStrategy = (priceList: number[]) => number
+export type AlgoStrategy = (priceList: number[]) => number
 
 /**
- * calculates WMA changes between 12 (2 hours) and 84 (14 hours)
+ * calculates WMA changes between time intervals
  * @param {number[]} priceList
  * @returns {number}
  */
-function createWMAStrategy(periodShort: number, periodLong: number): WMAStrategy {
-    //ema for 2 hrs
+function createAlgoStrategy(periodShort: number, periodLong: number, periodMed?: number): AlgoStrategy {
     const wShort = getWeights(periodShort)
     const wLong = getWeights(periodLong)
+    const wMed = periodMed ? getWeights(periodMed) : null
 
     return (priceList: number[]) => {
         const emaShort = getWMA(priceList, wShort)
         const emaLong = getWMA(priceList, wLong)
-        return percentchange(emaLong, emaShort)
+
+        if (!periodMed) return percentchange(emaLong, emaShort)
+        else {
+            const emaMed = getWMA(priceList, wMed)
+            return 0.6 * percentchange(emaMed, emaShort) + 0.4 * percentchange(emaLong, emaShort)
+        }
     }
 }
 
-export { getWMA, getWeights, createWMAStrategy }
+/**
+ * calculates WMA change for a given asset symbol
+ */
+function assetEMAChange(priceList: number[], wmaStrategy: AlgoStrategy): number {
+    return wmaStrategy(priceList)
+}
+
+export { getWMA, getWeights, createAlgoStrategy, assetEMAChange }
