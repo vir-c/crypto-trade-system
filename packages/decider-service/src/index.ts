@@ -6,6 +6,7 @@ import cron from 'node-cron'
 import db from './db'
 import { IPerfHistory, PerfHistory, SymbolPerf } from './db/models/perfHistory'
 import { symbolPerfHistory } from './algo/historical-performace'
+import ipc from './ipc'
 
 async function run() {
     try {
@@ -16,8 +17,8 @@ async function run() {
 
         perfDocument.perfHistory.map((el) => symbolPerfHistory.updatePerf(el.symbol, el.pl))
 
-        //create cron job to enable transactionsc
-        cron.schedule(config.cronSchedule, main)
+        //on message from aggregator service execute main
+        ipc.executeOnMessage(main)
     } catch (error) {
         Log.error(error, 'Failed to execute app... ')
     }
