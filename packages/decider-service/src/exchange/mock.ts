@@ -1,5 +1,6 @@
 import { pluck, sum } from 'ramda'
 import { symbolName } from 'typescript'
+import { symbolPerfHistory } from '../algo/historical-performace'
 import db from '../db'
 import { ITicker, TradeType } from '../db/models'
 
@@ -8,7 +9,7 @@ import { ITicker, TradeType } from '../db/models'
  * @param symbol
  * @returns {number} profit loss for the transaction
  */
-async function sellAsset(symbol: string, lastPrice: number): Promise<number> {
+async function sellAsset(symbol: string, lastPrice: number): Promise<{ symbol: string; pl: number }> {
     //get quantity for the asset
     const tradeData = await db.controller.trades.getLastAssetTrade(symbol)
 
@@ -24,7 +25,7 @@ async function sellAsset(symbol: string, lastPrice: number): Promise<number> {
         profitOrLoss: pl,
     })
 
-    return pl
+    return { symbol, pl }
 }
 
 /**
@@ -61,15 +62,23 @@ function createLastPriceMap(ticker: ITicker) {
 async function makeTrades(sellAssets: string[], buyAssets: string[], lastTicker: ITicker) {
     const getLastPrice = createLastPriceMap(lastTicker)
 
-    const sellTransactions = sellAssets.map((symbol) => sellAsset(symbol, getLastPrice(symbol)))
-    const buyTransactions = buyAssets.map((symbol) => buyAsset(symbol, getLastPrice(symbol)))
-    const earnings = await Promise.all([...sellTransactions, ...buyTransactions])
+    const sellTransactions = await Promise.all(sellAssets.map((symbol) => sellAsset(symbol, getLastPrice(symbol))))
+    const buyTransactions = await Promise.all(buyAssets.map((symbol) => buyAsset(symbol, getLastPrice(symbol))))
 
-    return sum(earnings)
+    //for sell transations, update performance history and get earnings
+    const earnings = sellTransactions.reduce((sum, el) => {
+        sum += el.pl
+        symbolPerfHistory.updatePerf(el.symbol, el.pl)
+        return sum
+    }, 0)
+
+    await db.controller.perfHistory.update(sellTransactions)
+
+    return earnings
 }
 
 /**
- *
+ *  updates current holdings data
  */
 async function updateHoldings(assets: string[], pl: number) {
     await db.controller.holdings.addHoldings({

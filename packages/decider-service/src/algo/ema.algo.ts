@@ -11,18 +11,20 @@ For 6
 ]
 */
 
-//const getWeightFn = (n) => (x) => 1 / (n * 4 + x)
-//ema
-const getWeightFn = (n) => (x) => (2 / (n + 1)) * Math.pow(1 - 2 / (n + 1), x)
+const getWMAWeightFn = (n) => (x) => 1 / (n * 4 + x)
 
-const getWeightsN = (n) => compose(map(getWeightFn(n)), range(0))(n)
+//ema
+const getEMAWeightFn = (n) => (x) => (2 / (n + 1)) * Math.pow(1 - 2 / (n + 1), x)
+
+const getNWeightsForEMA = (n) => compose(map(getEMAWeightFn(n)), range(0))(n)
+const getNWeightsForWMA = (n) => compose(map(getWMAWeightFn(n)), range(0))(n)
 const divideBy = (s) => (x) => x / s //https://ramdajs.com/docs/#divide
 const multiply = (x, y) => x * y
 
 //normalize array
 const norm = (w) => map(compose(divideBy, sum)(w))(w)
 
-function getWeights(size: number): number[] {
+function getWeights(size: number, getWeightsN: (n: number) => number[]): number[] {
     return compose(norm, getWeightsN)(size)
 }
 
@@ -41,23 +43,23 @@ const percentchange = (base: number, now: number) => ((now - base) / base) * 100
 export type AlgoStrategy = (priceList: number[]) => number
 
 /**
- * calculates WMA changes between time intervals
- * @param {number[]} priceList
- * @returns {number}
+ * creates a strategy for a given weight function
  */
-function createAlgoStrategy(periodShort: number, periodLong: number, periodMed?: number): AlgoStrategy {
-    const wShort = getWeights(periodShort)
-    const wLong = getWeights(periodLong)
-    const wMed = periodMed ? getWeights(periodMed) : null
+function createAlgoStrategy(weightFn: (n: any) => number[]) {
+    return (periodShort: number, periodLong: number, periodMed?: number): AlgoStrategy => {
+        const wShort = getWeights(periodShort, weightFn)
+        const wLong = getWeights(periodLong, weightFn)
+        const wMed = periodMed ? getWeights(periodMed, weightFn) : null
 
-    return (priceList: number[]) => {
-        const emaShort = getWMA(priceList, wShort)
-        const emaLong = getWMA(priceList, wLong)
+        return (priceList: number[]) => {
+            const emaShort = getWMA(priceList, wShort)
+            const emaLong = getWMA(priceList, wLong)
 
-        if (!periodMed) return percentchange(emaLong, emaShort)
-        else {
-            const emaMed = getWMA(priceList, wMed)
-            return 0.6 * percentchange(emaMed, emaShort) + 0.4 * percentchange(emaLong, emaShort)
+            if (!periodMed) return percentchange(emaLong, emaShort)
+            else {
+                const emaMed = getWMA(priceList, wMed)
+                return 0.6 * percentchange(emaMed, emaShort) + 0.4 * percentchange(emaLong, emaShort)
+            }
         }
     }
 }
@@ -69,4 +71,9 @@ function assetEMAChange(priceList: number[], wmaStrategy: AlgoStrategy): number 
     return wmaStrategy(priceList)
 }
 
-export { getWMA, getWeights, createAlgoStrategy, assetEMAChange }
+const algoStrategy = {
+    ema: createAlgoStrategy(getNWeightsForEMA),
+    wma: createAlgoStrategy(getNWeightsForWMA),
+}
+
+export { getWMA, getWeights, algoStrategy, assetEMAChange }

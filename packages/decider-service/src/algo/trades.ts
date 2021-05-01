@@ -33,26 +33,25 @@ function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEM
     //for each symbol get ema percentage change
     const symbolEMAChangeList: symbolEMAChange[] = []
     for (let sym of top40Symbols) {
-        try{
+        try {
             const symbolPriceList = getPriceListForSymbol(tickers, sym)
             symbolEMAChangeList.push({ symbol: sym, wmaChange: assetEMAChange(symbolPriceList, AlgoStrategy) })
-        }catch{
+        } catch {
             //ignore error
         }
     }
 
     //filter trades that have wmaChange greater than 2%
-    const filterEMAChangeList = R.filter((a: symbolEMAChange) => a.wmaChange > 0.5 && a.wmaChange < 2.5)(
+    const filterEMAChangeList = R.filter((a: symbolEMAChange) => a.wmaChange > 0.6 && a.wmaChange < 2.5)(
         symbolEMAChangeList
     )
 
     //get top 10 performing symbols
-    const top10Performers = (R.compose(
-        R.slice(0, 15),
-        R.sort((a: symbolEMAChange, b: symbolEMAChange) => b.wmaChange - a.wmaChange)
+    const topPerformers = (R.compose(
+        R.slice(0, 11),
+        R.sort((a: symbolEMAChange, b: symbolEMAChange) => a.wmaChange - b.wmaChange)
     )(filterEMAChangeList) as unknown) as symbolEMAChange[]
-
-    return top10Performers
+    return topPerformers
 }
 
 /**
