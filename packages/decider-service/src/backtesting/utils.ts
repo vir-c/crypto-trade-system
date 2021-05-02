@@ -1,4 +1,5 @@
 import { Log } from '../../../../shared/node'
+import alert from '../alert'
 import { ITicker } from '../db/models'
 
 const fs = require('fs')
@@ -21,7 +22,8 @@ function getTickers(filePath: string): Promise<ITicker[]> {
                 resolve(tickers)
             })
         } catch (error) {
-            Log.error(error, 'File Read failed... ')
+            const errorStr = Log.error(error, 'File Read failed... ')
+            alert.error(errorStr)
         }
     })
 }

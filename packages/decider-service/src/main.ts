@@ -1,4 +1,5 @@
 import { Log } from '../../../shared/node'
+import alert from './alert'
 import { algoStrategy, getGoodTrades, shouldSellAsset } from './algo'
 import { symbolPerfHistory } from './algo/historical-performace'
 import db from './db'
@@ -45,6 +46,7 @@ export async function main() {
         }
     } catch (error) {
         const dateTime = new Date().toString()
-        Log.error(error, `Failed to execute main at ${dateTime}... `)
+        const errorStr = Log.error(error, `Failed to execute main at ${dateTime}... `)
+        alert.error(errorStr)
     }
 }
