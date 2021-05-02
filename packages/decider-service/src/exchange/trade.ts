@@ -1,4 +1,5 @@
 import { symbolPerfHistory } from '../algo/historical-performace'
+import { config } from '../config/base'
 import db from '../db'
 import { TradeType } from '../db/models'
 import binance from './binance'
@@ -41,7 +42,7 @@ async function buyAsset(symbol: string): Promise<number> {
         date: new Date(orderInfo.timestamp),
         price: orderInfo.price,
         tradeType: TradeType.BUY,
-        tradeValue: 20,
+        tradeValue: config.trade.value,
         quantity: orderInfo.quantity,
     })
     return 0

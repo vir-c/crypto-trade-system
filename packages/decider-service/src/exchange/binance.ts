@@ -14,7 +14,7 @@ const buyAsset = async (symbol: string): Promise<orderInfo> => {
     const order = await binance.order({
         symbol: symbol,
         side: 'BUY',
-        quoteOrderQty: '20',
+        quoteOrderQty: config.trade.value.toString(),
         type: 'MARKET',
     })
 

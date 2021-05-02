@@ -17,5 +17,8 @@ export const config = {
         botURL: 'https://api.telegram.org/bot' + process.env.TELEGRAM_BOT_TOKEN + '/sendMessage',
         chatId: process.env.TELEGRAM_CHAT_ID,
     },
-    alertSchedule: '0 8,20 * * *', // At minute 0 past hour 8 and 20
+    trade: {
+        value: 20, //value of each buy transaction
+    },
+    alertSchedule: '0 1/4 * * *', // At minute 0 past hour 8 and 20,
 }

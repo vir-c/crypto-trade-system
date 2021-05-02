@@ -23,7 +23,9 @@ async function run() {
         //on message from aggregator service execute main
         ipc.executeOnMessage(main)
         //schedule alerting
-        cron.schedule(config.alertSchedule, alert.dailyPL)
+        cron.schedule(config.alertSchedule, alert.dailyPL, {
+            timezone: 'Asia/Kolkata',
+        })
     } catch (error) {
         const errorStr = Log.error(error, 'Failed to execute app... ')
         alert.error(errorStr)
