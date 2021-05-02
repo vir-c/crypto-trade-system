@@ -20,7 +20,7 @@ const dailyPL = async () => {
     Profit/Loss: ${pl}
     current holdings: ${holdings}
 
-    `
+    `.replace(/\./g, '\\.')
     telegram.sendMessage(config.telegram.botURL, config.telegram.chatId, message, true)
 }
 
