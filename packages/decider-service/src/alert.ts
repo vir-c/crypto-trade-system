@@ -21,7 +21,7 @@ const dailyPL = async () => {
     current holdings: ${holdings}
 
     `
-    telegram.sendMessage(config.telegram.botURL, config.telegram.chatId, message)
+    telegram.sendMessage(config.telegram.botURL, config.telegram.chatId, message, true)
 }
 
 const getTime = () => {

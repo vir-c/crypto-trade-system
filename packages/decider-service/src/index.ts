@@ -8,11 +8,15 @@ import { symbolPerfHistory } from './algo/historical-performace'
 import ipc from './ipc'
 import cron from 'node-cron'
 import alert from './alert'
+import binance from './exchange/binance'
 
 async function run() {
     try {
         //connect to mongodb
         db.connect({ db: config.db.mongoDB.uri })
+
+        // get lotsize details for precision
+        binance.getInfo()
 
         //cache performace history
         const perfDocument: PerfHistory = await db.controller.perfHistory.get()

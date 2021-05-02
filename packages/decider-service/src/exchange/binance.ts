@@ -1,3 +1,4 @@
+import axios from 'axios'
 import Binance, { Order } from 'binance-api-node'
 import { parse } from 'dotenv/types'
 import { config } from '../config'
@@ -9,6 +10,32 @@ const binance = Binance({
 })
 
 type orderInfo = { price: number; quantity: number; timestamp: number }
+
+const calculatePrecision = (num: string) => {
+    let i = 0
+    while (num[i] != '1') i++
+    return i
+}
+
+const isUSDT = (symbol) => symbol.toUpperCase().substr(-4) === 'USDT'
+
+const symbolPrecisionMap = new Map()
+const getInfo = async () => {
+    const { data } = await axios.get('https://www.binance.com/api/v1/exchangeInfo')
+
+    data.symbols
+        .filter((item) => isUSDT(item.symbol))
+        .map((item) => {
+            const lotSize = item.filters.find((filter) => filter.filterType == 'LOT_SIZE')
+            symbolPrecisionMap.set(item.symbol, calculatePrecision(lotSize.stepSize))
+        })
+}
+
+const corretToStepSize = (symbol, num: number): string => {
+    const precision = symbolPrecisionMap.get(symbol)
+    const numStr = num.toString()
+    return numStr.slice(0, numStr.indexOf('.') + precision)
+}
 
 const buyAsset = async (symbol: string): Promise<orderInfo> => {
     const order = await binance.order({
@@ -25,7 +52,7 @@ const sellAsset = async (symbol: string, quantity: number): Promise<orderInfo> =
     const order = await binance.order({
         symbol: symbol,
         side: 'SELL',
-        quantity: quantity.toString(),
+        quantity: corretToStepSize(symbol, quantity),
         type: 'MARKET',
     })
 
@@ -50,4 +77,5 @@ const getOrderInfo = (order: Order): orderInfo => {
 export default {
     buyAsset,
     sellAsset,
+    getInfo,
 }
