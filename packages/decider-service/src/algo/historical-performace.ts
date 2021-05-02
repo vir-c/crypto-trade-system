@@ -29,8 +29,16 @@ const printPerfHistory = () => {
     console.log(s)
 }
 
+const getAll = (): { symbol: string; pl: number }[] => {
+    const allSymbolsPL = []
+    perfHistorytMap.forEach((val, key) => allSymbolsPL.push({ symbol: key, pl: val }))
+
+    return allSymbolsPL
+}
+
 export const symbolPerfHistory = {
     updatePerf,
     sortByPerf,
     printPerfHistory,
+    getAll,
 }

@@ -5,5 +5,7 @@ export class Log {
         const errorStr = util.inspect(error, { depth: null })
 
         console.log(message ? `${message} : ${errorStr}` : errorStr)
+
+        return errorStr
     }
 }

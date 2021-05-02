@@ -6,7 +6,9 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "postinstall": "npm run bootstrap",
-    "start": "lerna run start --stream"
+    "start": "lerna run start --stream",
+    "start:ds": "lerna run start --scope decider-service --stream",
+    "start:as": "lerna run start --scope aggregator-service --stream"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,8 @@
   "dependencies": {
     "broadcast-channel": "^3.5.3",
     "lerna": "^4.0.0",
+    "axios": "^0.21.1",
+    "dotenv": "^8.2.0",
     "ramda": "^0.27.1"
   },
   "devDependencies": {

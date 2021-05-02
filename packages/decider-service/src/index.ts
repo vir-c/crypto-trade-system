@@ -1,26 +1,32 @@
-import './env'
-import { Log } from '../../../shared/node'
-import { main } from './main'
+import '../../../shared/node/env'
 import { config } from './config'
-import cron from 'node-cron'
+import { Log, telegram } from '../../../shared/node'
+import { main } from './main'
 import db from './db'
-import { IPerfHistory, PerfHistory, SymbolPerf } from './db/models/perfHistory'
+import { PerfHistory } from './db/models/perfHistory'
 import { symbolPerfHistory } from './algo/historical-performace'
 import ipc from './ipc'
+import cron from 'node-cron'
+import alert from './alert'
 
 async function run() {
     try {
         //connect to mongodb
         db.connect({ db: config.db.mongoDB.uri })
 
+        //cache performace history
         const perfDocument: PerfHistory = await db.controller.perfHistory.get()
-
-        perfDocument.perfHistory.map((el) => symbolPerfHistory.updatePerf(el.symbol, el.pl))
+        if (perfDocument) {
+            perfDocument.perfHistory.map((el) => symbolPerfHistory.updatePerf(el.symbol, el.pl))
+        }
 
         //on message from aggregator service execute main
         ipc.executeOnMessage(main)
+        //schedule alerting
+        cron.schedule(config.alertSchedule, alert.dailyPL)
     } catch (error) {
-        Log.error(error, 'Failed to execute app... ')
+        const errorStr = Log.error(error, 'Failed to execute app... ')
+        alert.error(errorStr)
     }
 }
 

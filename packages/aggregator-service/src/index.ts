@@ -1,6 +1,6 @@
-import './env'
-import { Log } from '../../../shared/node'
+import '../../../shared/node/env'
 import { config } from './config'
+import { Log } from '../../../shared/node'
 import db from './db'
 import cron from 'node-cron'
 import { main } from './main'

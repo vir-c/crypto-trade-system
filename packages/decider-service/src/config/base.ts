@@ -7,5 +7,15 @@ export const config = {
             database: process.env.MONGODB_NAME,
         },
     },
-    cronSchedule: '2,12,22,32,42,52 * * * *', // https://crontab.guru/ “At minute 2, 12, 22, 32, 42, and 52.”
+    exchange: {
+        binance: {
+            apiKey: process.env.BINANCE_API_KEY,
+            secretKey: process.env.BINANCE_SECRET_KEY,
+        },
+    },
+    telegram: {
+        botURL: 'https://api.telegram.org/bot' + process.env.TELEGRAM_BOT_TOKEN + '/sendMessage',
+        chatId: process.env.TELEGRAM_CHAT_ID,
+    },
+    alertSchedule: '0 8,20 * * *', // At minute 0 past hour 8 and 20
 }

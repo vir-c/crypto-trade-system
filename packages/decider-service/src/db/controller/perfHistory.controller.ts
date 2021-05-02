@@ -1,4 +1,4 @@
-import { IPerfHistory, PerfHistory, PerfHistoryModel, SymbolPerf } from '../models/perfHistory'
+import { PerfHistory, PerfHistoryModel, SymbolPerf } from '../models/perfHistory'
 
 async function update(symbolPerfList: SymbolPerf[]) {
     return PerfHistoryModel.updateOne(

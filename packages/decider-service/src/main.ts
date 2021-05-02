@@ -1,9 +1,8 @@
-import { symbolName } from 'typescript'
 import { Log } from '../../../shared/node'
 import { algoStrategy, getGoodTrades, shouldSellAsset } from './algo'
 import { symbolPerfHistory } from './algo/historical-performace'
 import db from './db'
-import { makeTrades, updateHoldings } from './exchange/mock'
+import { makeTrades, updateHoldings } from './exchange/trade'
 
 //from backtesting
 const buyAlgoStrategy = algoStrategy.ema(12, 72, 36)
@@ -32,14 +31,16 @@ export async function main() {
         const buySymbols = symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize)
 
         if (buySymbols.length || sellSymbols.length) {
-            const pl = await makeTrades(sellSymbols, buySymbols, tickers[0])
+            const pl = await makeTrades(sellSymbols, buySymbols)
 
             const holdSymbols = [...buySymbols, ...currentAssets.filter((s) => !sellSymbols.includes(s))]
 
             updateHoldings(holdSymbols, pl + (currentHoldings?.totalPL || 0))
 
             console.log(
-                `Bought: ${buySymbols} and Sold ${sellSymbols} at Profil/Loss ${pl}, current holdings are ${holdSymbols}`
+                `Bought: ${buySymbols} ${
+                    sellSymbols.length ? sellSymbols + ' and Sold  at Profil/Loss: ' + pl : ''
+                }, current holdings are ${holdSymbols}`
             )
         }
     } catch (error) {
