@@ -18,7 +18,7 @@ export const config = {
         chatId: process.env.TELEGRAM_CHAT_ID,
     },
     trade: {
-        value: 20, //value of each buy transaction
+        value: 50, //value of each buy transaction
     },
     alertSchedule: '0 */4 * * *', // At minute 0 past hour 8 and 20,
 }
