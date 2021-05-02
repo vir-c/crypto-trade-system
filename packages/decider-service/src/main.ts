@@ -39,8 +39,8 @@ export async function main() {
             updateHoldings(holdSymbols, pl + (currentHoldings?.totalPL || 0))
 
             console.log(
-                `Bought: ${buySymbols} ${
-                    sellSymbols.length ? sellSymbols + ' and Sold  at Profil/Loss: ' + pl : ''
+                `Bought: ${buySymbols} and Sold ${
+                    sellSymbols.length ? sellSymbols + ' at Profil/Loss: ' + pl : ''
                 }, current holdings are ${holdSymbols}`
             )
         }
