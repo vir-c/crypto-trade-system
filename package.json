@@ -21,10 +21,11 @@
   },
   "homepage": "https://github.com/vir-c/crypto-trade-system#readme",
   "dependencies": {
-    "broadcast-channel": "^3.5.3",
-    "lerna": "^4.0.0",
+    "@supercharge/promise-pool": "^1.7.0",
     "axios": "^0.21.1",
+    "broadcast-channel": "^3.5.3",
     "dotenv": "^8.2.0",
+    "lerna": "^4.0.0",
     "ramda": "^0.27.1"
   },
   "devDependencies": {

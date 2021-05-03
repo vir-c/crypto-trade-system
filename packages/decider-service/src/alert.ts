@@ -15,9 +15,7 @@ const dailyPL = async () => {
     const accountValue = await binance.getAccountValue()
 
     const message = ` 
-    __*Daily PL:*__ ${getTime()}
-    
-    Last 12 hrs info
+    __*Info Alert:*__  ${getTime()}
     
     Profit/Loss: ${pl}
     current holdings: ${holdings}
@@ -30,7 +28,7 @@ const dailyPL = async () => {
 }
 
 const getTime = () => {
-    const dateInfo = new Date().toString().split(':')
+    const dateInfo = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }).split(':')
     return dateInfo[0] + ':' + dateInfo[1]
 }
 
