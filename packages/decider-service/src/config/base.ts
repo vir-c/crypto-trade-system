@@ -20,5 +20,5 @@ export const config = {
     trade: {
         value: 50, //value of each buy transaction
     },
-    alertSchedule: '0 */4 * * *', // At minute 0 past hour 8 and 20,
+    alertSchedule: '0 */2 * * *', // send alert every 2 hours,
 }

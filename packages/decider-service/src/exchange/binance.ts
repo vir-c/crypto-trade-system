@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Binance, { Order } from 'binance-api-node'
-import { parse } from 'dotenv/types'
 import { config } from '../config'
+import db from '../db'
 
 // Authenticated client, can make signed calls
 const binance = Binance({
@@ -74,8 +74,28 @@ const getOrderInfo = (order: Order): orderInfo => {
     return { quantity, price: pq / totalQty, timestamp: order.transactTime }
 }
 
+const getPrices = () => {
+    return binance.prices()
+}
+
+const getAccountValue = async (): Promise<number> => {
+    const [prices, accountInfo] = await Promise.all([getPrices(), binance.accountInfo()])
+    return accountInfo.balances.reduce((value, item) => {
+        if (item.asset === 'USDT') value += parseFloat(item.free) + parseFloat(item.locked)
+        else {
+            value += prices[item.asset + 'USDT']
+                ? parseFloat(prices[item.asset + 'USDT']) * (parseFloat(item.free) + parseFloat(item.locked))
+                : 0
+        }
+
+        return value
+    }, 0)
+}
+
 export default {
     buyAsset,
     sellAsset,
     getInfo,
+    getPrices,
+    getAccountValue,
 }
