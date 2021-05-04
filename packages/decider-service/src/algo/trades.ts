@@ -75,7 +75,7 @@ function shouldSellAsset(tickers: ITicker[], symbol: string, wmaStrategy: AlgoSt
 }
 
 function getPriceListForSymbol(tickers: ITicker[], symbol: string) {
-    return tickers.map((t) => t.priceList.find((p) => p.symbol == symbol).lastPrice)
+    return tickers.map((t) => t.priceList.find((p) => p.symbol == symbol).avgPrice5min)
 }
 
 export { getGoodTrades, shouldSellAsset }
