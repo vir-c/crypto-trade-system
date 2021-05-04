@@ -8,7 +8,9 @@ const getLineEq = (x: [number, number], y: [number, number]): ((arg0: number) =>
 const upperBound = (n: number) => Math.min(getLineEq([0.2, 0.7], [5, 2.5])(n), 5)
 const lowerBound = (n: number) => Math.max(getLineEq([0.2, 0.7], [2, 0.6])(n), 0.6)
 
-const getSmartBounds = (n: number) => [lowerBound(n), upperBound(n)]
+const getSmartBounds = (n: number) => [roundTo2decimal(lowerBound(n)), roundTo2decimal(upperBound(n))]
+
+const roundTo2decimal = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
 
 export default {
     getSmartBounds,

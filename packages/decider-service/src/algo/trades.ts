@@ -44,7 +44,7 @@ function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEM
 
     //ratio of market for which 24 change is greater than zero
     const marketDistribution =
-        tickers[0].priceList.reduce((count, item) => (item.priceChangePercent > 0 ? count++ : count), 0) /
+        tickers[0].priceList.reduce((count, item) => (item.priceChangePercent > 0 ? ++count : count), 0) /
         tickers[0].priceList.length
 
     //get smart bounds based on market distribution
