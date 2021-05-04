@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import { ITicker } from '../db/models'
 import { IPrice } from '../db/models/price'
 import { assetEMAChange, AlgoStrategy } from './ema.algo'
+import smartbounds from './smartbounds'
 
 type symbolEMAChange = { symbol: string; wmaChange: number }
 
@@ -41,10 +42,18 @@ function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEM
         }
     }
 
-    //filter trades that have wmaChange greater than 2%
-    const filterEMAChangeList = R.filter((a: symbolEMAChange) => a.wmaChange > 0.6 && a.wmaChange < 2.5)(
-        symbolEMAChangeList
-    )
+    //ratio of market for which 24 change is greater than zero
+    const marketDistribution =
+        tickers[0].priceList.reduce((count, item) => (item.priceChangePercent > 0 ? count++ : count), 0) /
+        tickers[0].priceList.length
+
+    //get smart bounds based on market distribution
+    const [lowerBound, upperBound] = smartbounds.getSmartBounds(marketDistribution)
+
+    //filter trades that have wmaChange with bounds
+    const filterEMAChangeList = R.filter(
+        (a: symbolEMAChange) => a.wmaChange > lowerBound && a.wmaChange < upperBound
+    )(symbolEMAChangeList)
 
     //get top 10 performing symbols
     const topPerformers = (R.compose(
