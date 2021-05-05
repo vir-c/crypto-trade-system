@@ -6,8 +6,8 @@ import db from './db'
 import { makeTrades, updateHoldings } from './exchange/trade'
 
 //from backtesting
-const buyAlgoStrategy = algoStrategy.ema(12, 72, 36)
-const sellAlgoStrategy = algoStrategy.wma(9, 30)
+const buyAlgoStrategy = algoStrategy.ema(18, 84)
+const sellAlgoStrategy = algoStrategy.ema(9, 30)
 
 export async function main() {
     try {

@@ -18,16 +18,18 @@ async function backtest() {
     tickers = tickers.reverse() //.sort((a, b) => a.date.getTime() - b.date.getTime())
 
     // for (let i = 1; i <= 3; i++) {
-    //     for (let j = 6; j < 18; j = j + 2) {
-    const ws = [18, 144]
-    const buyAlgoStrategy = algoStrategy.ema(12, 72, 36)
-    const sellAlgoStrategy = algoStrategy.wma(9, 30)
+    //     for (let j = 6; j <= 18; j = j + 2) {
+    //         const ws = [i * 6, j * 6]
+    const ws = [18, 84]
+    const buyAlgoStrategy = algoStrategy.ema(ws[0], ws[1])
+    const sellAlgoStrategy = algoStrategy.ema(9, 30)
 
     const totalPL = runTest(tickers, buyAlgoStrategy, sellAlgoStrategy, ws[1])
-    console.log(totalPL, ws[0], ws[1])
+    console.log(totalPL, ws[0], ws[1], ws[1] / 2)
     console.log('Buy Trades: ' + buyCount + ' Sell Trades: ' + sellCount)
     //symbolPerfHistory.printPerfHistory()
-
+    // buyCount = 0
+    // sellCount = 0
     //     }
     // }
 }
@@ -35,6 +37,7 @@ async function backtest() {
 function runTest(tickers: ITicker[], buyStrategy: AlgoStrategy, sellStrategy: AlgoStrategy, size: number): number {
     //mock holdings
     const currholdings = mockHoldings()
+    symbolPerfHistory.clear()
 
     for (let i = 900; i >= 0; i--) {
         const currTickers = tickers.slice(i, i + size)
@@ -99,7 +102,7 @@ function mockSchdeuledTrade(tickers: ITicker[], currholdings, buyStrategy, sellS
         const holdSymbols = [...buySymbols, ...currentSymbols.filter((s) => !sellSymbols.includes(s))]
         const newAssets = getAssets(holdSymbols, currentAssets, getLastPrice)
         const pl = calculateProfit(sellSymbols, currentAssets, getLastPrice)
-        console.log(`Buy:${buySymbols}    Sell: ${sellSymbols} at ${pl}`)
+        //console.log(`Buy:${buySymbols}    Sell: ${sellSymbols} at ${pl}`)
         buyCount += buySymbols.length
         sellCount += sellSymbols.length
         currholdings.updateHoldings(newAssets, pl + currholdings.getHoldings().totalPL)

@@ -36,9 +36,14 @@ const getAll = (): { symbol: string; pl: number }[] => {
     return allSymbolsPL
 }
 
+const clear = () => {
+    perfHistorytMap.clear()
+}
+
 export const symbolPerfHistory = {
     updatePerf,
     sortByPerf,
     printPerfHistory,
     getAll,
+    clear,
 }
