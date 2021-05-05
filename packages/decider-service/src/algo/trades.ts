@@ -78,4 +78,11 @@ function getPriceListForSymbol(tickers: ITicker[], symbol: string) {
     return tickers.map((t) => t.priceList.find((p) => p.symbol == symbol).avgPrice5min)
 }
 
+function getPriceMap(ticker: ITicker) {
+    const priceMap = new Map()
+    ticker.priceList.map((t) => priceMap.set(t.symbol, t.avgPrice5min))
+
+    return priceMap
+}
+
 export { getGoodTrades, shouldSellAsset }

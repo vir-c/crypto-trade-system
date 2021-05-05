@@ -32,15 +32,15 @@ export async function main() {
         const buySymbols = symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize)
 
         if (buySymbols.length || sellSymbols.length) {
-            const pl = await makeTrades(sellSymbols, buySymbols)
+            const { earnings, boughtSymbols, soldSymbols } = await makeTrades(sellSymbols, buySymbols)
 
-            const holdSymbols = [...buySymbols, ...currentAssets.filter((s) => !sellSymbols.includes(s))]
+            const holdSymbols = [...boughtSymbols, ...currentAssets.filter((s) => !soldSymbols.includes(s))]
 
-            updateHoldings(holdSymbols, pl + (currentHoldings?.totalPL || 0))
+            updateHoldings(holdSymbols, earnings + (currentHoldings?.totalPL || 0))
 
             console.log(
                 `Bought: ${buySymbols} and Sold ${
-                    sellSymbols.length ? sellSymbols + ' at Profil/Loss: ' + pl : ''
+                    sellSymbols.length ? sellSymbols + ' at Profil/Loss: ' + earnings : ''
                 }, current holdings are ${holdSymbols}`
             )
         }

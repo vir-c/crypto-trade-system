@@ -1,3 +1,6 @@
+import { all } from 'ramda'
+import { Log } from '../../../../shared/node'
+import alert from '../alert'
 import { symbolPerfHistory } from '../algo/historical-performace'
 import { config } from '../config/base'
 import db from '../db'
@@ -55,25 +58,50 @@ async function buyAsset(symbol: string): Promise<number> {
 //     return (symbol) => priceMap.get(symbol)
 // }
 
+type MakTradeRes = { soldSymbols: string[]; boughtSymbols: string[]; earnings: number }
+
 /**
  *
  * @param sellAssets symbols to be sold
  * @param buyAssets symbols to be bought
  */
-async function makeTrades(sellAssets: string[], buyAssets: string[]) {
-    const sellTransactions = await Promise.all(sellAssets.map((symbol) => sellAsset(symbol)))
-    const buyTransactions = await Promise.all(buyAssets.map((symbol) => buyAsset(symbol)))
+async function makeTrades(sellAssets: string[], buyAssets: string[]): Promise<MakTradeRes> {
+    const sellTransactions = await Promise.allSettled(sellAssets.map((symbol) => sellAsset(symbol)))
+    const buyTransactions = await Promise.allSettled(buyAssets.map((symbol) => buyAsset(symbol)))
 
-    //for sell transations, update performance history and get earnings
-    const earnings = sellTransactions.reduce((sum, el) => {
-        sum += el.pl
-        symbolPerfHistory.updatePerf(el.symbol, el.pl)
-        return sum
-    }, 0)
+    const soldSymbols = [],
+        sellTrsctnErrors = []
+    let earnings = 0
+    sellTransactions.map((item) => {
+        if (item.status === 'fulfilled') {
+            //for sell transations, update performance history and get earnings
+            symbolPerfHistory.updatePerf(item.value.symbol, item.value.pl)
+            earnings += item.value.pl
+            soldSymbols.push(item.value.symbol)
+        } else {
+            sellTransactions.push(item.reason)
+        }
+    })
+
+    const buyTrsctnErrors = [],
+        boughtSymbols = []
+
+    buyTransactions.map((item) => {
+        if (item.status == 'fulfilled') {
+            boughtSymbols.push(item.value)
+        } else {
+            buyTrsctnErrors.push(item.reason)
+        }
+    })
+
+    if (sellTrsctnErrors.length > 0 || buyTrsctnErrors.length > 0) {
+        const allErrors = Log.error([sellTrsctnErrors, buyTrsctnErrors])
+        alert.error(allErrors)
+    }
 
     await db.controller.perfHistory.update(symbolPerfHistory.getAll())
 
-    return earnings
+    return { soldSymbols, boughtSymbols, earnings }
 }
 
 /**
