@@ -9,15 +9,15 @@ type symbolEMAChange = { symbol: string; wmaChange: number }
 /** helper functions */
 
 const sortByVolume = (a: IPrice, b: IPrice) => b.volume * b.lastPrice - a.volume * a.lastPrice
-const getTop40 = R.compose(R.slice(0, 40), R.sort(sortByVolume))
+const getTop50 = R.compose(R.slice(0, 50), R.sort(sortByVolume))
 
 /**
  * returns top 40 symbols by dollar trade volume
  */
-function getTop40Symbols(priceList: IPrice[]) {
+function getTop50Symbols(priceList: IPrice[]) {
     return R.compose(
         R.map((x) => x['symbol']),
-        getTop40
+        getTop50
     )(priceList)
 }
 
@@ -28,12 +28,12 @@ function getTop40Symbols(priceList: IPrice[]) {
  * @returns
  */
 function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEMAChange[] {
-    // get top40 symbols by dollar volume
-    const top40Symbols: string[] = getTop40Symbols(tickers[0].priceList)
+    // get top50 symbols by dollar volume
+    const top50Symbols: string[] = getTop50Symbols(tickers[0].priceList)
 
     //for each symbol get ema percentage change
     const symbolEMAChangeList: symbolEMAChange[] = []
-    for (let sym of top40Symbols) {
+    for (let sym of top50Symbols) {
         try {
             const symbolPriceList = getPriceListForSymbol(tickers, sym)
             symbolEMAChangeList.push({ symbol: sym, wmaChange: assetEMAChange(symbolPriceList, AlgoStrategy) })
@@ -57,7 +57,7 @@ function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEM
 
     //get top 10 performing symbols
     const topPerformers = (R.compose(
-        R.slice(0, 11),
+        R.slice(0, 18),
         R.sort((a: symbolEMAChange, b: symbolEMAChange) => a.wmaChange - b.wmaChange)
     )(filterEMAChangeList) as unknown) as symbolEMAChange[]
     return topPerformers

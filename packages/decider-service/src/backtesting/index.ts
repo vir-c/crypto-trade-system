@@ -16,13 +16,15 @@ async function backtest() {
     let tickers = await utils.getTickers('./src/backtesting/tickers.txt')
     //sort by time
     tickers = tickers.reverse() //.sort((a, b) => a.date.getTime() - b.date.getTime())
-
+    console.log(tickers.length)
     // for (let i = 1; i <= 3; i++) {
     //     for (let j = 6; j <= 18; j = j + 2) {
     //         const ws = [i * 6, j * 6]
-    const ws = [18, 84]
-    const buyAlgoStrategy = algoStrategy.ema(ws[0], ws[1])
-    const sellAlgoStrategy = algoStrategy.ema(9, 30)
+    const ws = [24, 96]
+    const buyAlgoStrategy = algoStrategy.ema(24, 96)
+    const sellAlgoStrategy = algoStrategy.wma(9, 30)
+    // const buyAlgoStrategy = algoStrategy.ema(18, 84)
+    // const sellAlgoStrategy = algoStrategy.ema(9, 30)
 
     const totalPL = runTest(tickers, buyAlgoStrategy, sellAlgoStrategy, ws[1])
     console.log(totalPL, ws[0], ws[1], ws[1] / 2)
@@ -39,10 +41,12 @@ function runTest(tickers: ITicker[], buyStrategy: AlgoStrategy, sellStrategy: Al
     const currholdings = mockHoldings()
     symbolPerfHistory.clear()
 
-    for (let i = 900; i >= 0; i--) {
+    for (let i = 1000; i >= 0; i--) {
         const currTickers = tickers.slice(i, i + size)
+        //console.log(currTickers[0].date)
         mockSchdeuledTrade(currTickers, currholdings, buyStrategy, sellStrategy)
         //console.log(currholdings.getHoldings().totalPL)
+        //console.log(currTickers[0].date, currTickers[currTickers.length - 1].date)
     }
 
     return currholdings.getHoldings().totalPL
@@ -89,20 +93,28 @@ function mockSchdeuledTrade(tickers: ITicker[], currholdings, buyStrategy, sellS
     const currentSymbols = currentAssets.map((asset) => asset.symbol)
 
     const sellSymbols = currentSymbols.filter((symbol) => shouldSellAsset(tickers, symbol, sellStrategy)) || []
-    const top15Symbols = getGoodTrades(tickers, buyStrategy)
+    const top15Symbols = getGoodTrades(tickers, buyStrategy).filter(
+        (s) => !shouldSellAsset(tickers, s.symbol, sellStrategy)
+    )
 
     //ignore symbols that are held
     const buyTrades = top15Symbols.filter((i) => !currentSymbols.includes(i.symbol))
 
     //always maintain only 5 assets in holdings
     const buySize = 5 - currholdings.getHoldings().assets.length + sellSymbols.length
+    //const buySymbols = symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize)
     const buySymbols = symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize)
 
     if (buySymbols.length || sellSymbols.length) {
         const holdSymbols = [...buySymbols, ...currentSymbols.filter((s) => !sellSymbols.includes(s))]
         const newAssets = getAssets(holdSymbols, currentAssets, getLastPrice)
         const pl = calculateProfit(sellSymbols, currentAssets, getLastPrice)
-        //console.log(`Buy:${buySymbols}    Sell: ${sellSymbols} at ${pl}`)
+        const time = tickers[0].date['$date']
+        const buySymbolPrice = buySymbols.map((s) => getLastPrice(s))
+        const sellSymbolPrice = sellSymbols.map((s) => getLastPrice(s))
+        console.log(
+            `Buy:${buySymbols} ${buySymbolPrice}   Sell: ${sellSymbols} ${sellSymbolPrice} at ${pl} ${time}`
+        )
         buyCount += buySymbols.length
         sellCount += sellSymbols.length
         currholdings.updateHoldings(newAssets, pl + currholdings.getHoldings().totalPL)

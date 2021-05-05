@@ -6,8 +6,8 @@ import db from './db'
 import { makeTrades, updateHoldings } from './exchange/trade'
 
 //from backtesting
-const buyAlgoStrategy = algoStrategy.ema(18, 84)
-const sellAlgoStrategy = algoStrategy.ema(9, 30)
+const buyAlgoStrategy = algoStrategy.ema(24, 96)
+const sellAlgoStrategy = algoStrategy.wma(9, 30)
 
 export async function main() {
     try {
@@ -22,8 +22,10 @@ export async function main() {
 
         const topBuySymbols = getGoodTrades(tickers, buyAlgoStrategy)
 
-        //ignore symbols that are held
-        const buyTrades = topBuySymbols.filter((i) => !currentAssets.includes(i.symbol))
+        //ignore symbols that are held and ignore symbols that satisfy sell criteria
+        const buyTrades = topBuySymbols
+            .filter((i) => !currentAssets.includes(i.symbol))
+            .filter((i) => !shouldSellAsset(tickers, i.symbol, sellAlgoStrategy))
 
         //always maintain only 5 assets in holdings
         const buySize = 5 - currentAssets.length + sellSymbols.length
