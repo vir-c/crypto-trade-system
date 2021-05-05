@@ -37,7 +37,7 @@ async function sellAsset(symbol: string): Promise<{ symbol: string; pl: number }
  * buy an asset
  * @param symbol
  */
-async function buyAsset(symbol: string): Promise<number> {
+async function buyAsset(symbol: string): Promise<string> {
     const orderInfo = await binance.buyAsset(symbol)
 
     await db.controller.trades.addTrade({
@@ -48,7 +48,7 @@ async function buyAsset(symbol: string): Promise<number> {
         tradeValue: config.trade.value,
         quantity: orderInfo.quantity,
     })
-    return 0
+    return symbol
 }
 
 // function createLastPriceMap(ticker: ITicker) {
