@@ -31,9 +31,9 @@ export async function main() {
         const buySize = 5 - currentAssets.length + sellSymbols.length
 
         //get buysymbols with good performace history
-        const buySymbols = symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize)
+        const buySymbols = buySize>0 ? symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize) : []
 
-        if (buySymbols.length || sellSymbols.length) {
+        if ( buySymbols.length || sellSymbols.length) {
             const { earnings, boughtSymbols, soldSymbols } = await makeTrades(sellSymbols, buySymbols)
 
             const holdSymbols = [...boughtSymbols, ...currentAssets.filter((s) => !soldSymbols.includes(s))]
