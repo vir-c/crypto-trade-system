@@ -13,6 +13,7 @@ export const config = {
             secretKey: process.env.BINANCE_SECRET_KEY,
         },
     },
+    blacklistSymbols: ['USDCUSDT', 'BNBUSDT', 'BUSDUSDT', 'EURUSDT', 'GBPUSDT'],
     telegram: {
         botURL: 'https://api.telegram.org/bot' + process.env.TELEGRAM_BOT_TOKEN + '/sendMessage',
         chatId: process.env.TELEGRAM_CHAT_ID,

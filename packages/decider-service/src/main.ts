@@ -1,13 +1,14 @@
 import { Log } from '../../../shared/node'
 import alert from './alert'
-import { algoStrategy, getGoodTrades, shouldSellAsset } from './algo'
+import { getGoodTrades, shouldSellAsset, ALGO_STRATEGY } from './algo'
 import { symbolPerfHistory } from './algo/historical-performace'
+import marketTrend from './algo/market-trend'
 import db from './db'
 import { makeTrades, updateHoldings } from './exchange/trade'
 
 //from backtesting
-const buyAlgoStrategy = algoStrategy.ema(24, 96)
-const sellAlgoStrategy = algoStrategy.wma(9, 30)
+const buyAlgoStrategy = ALGO_STRATEGY.MACD_EMA
+const sellAlgoStrategy = ALGO_STRATEGY.MACD
 
 export async function main() {
     try {
@@ -23,17 +24,18 @@ export async function main() {
         const topBuySymbols = getGoodTrades(tickers, buyAlgoStrategy)
 
         //ignore symbols that are held and ignore symbols that satisfy sell criteria
-        const buyTrades = topBuySymbols
-            .filter((i) => !currentAssets.includes(i.symbol))
-            .filter((i) => !shouldSellAsset(tickers, i.symbol, sellAlgoStrategy))
+        const buyTrades = topBuySymbols.filter((s) => !currentAssets.includes(s))
 
-        //always maintain only 5 assets in holdings
-        const buySize = 5 - currentAssets.length + sellSymbols.length
+        //get holding size from market trend
+        const holdingsLimit = marketTrend.getHoldingsSize(tickers)
+
+        //dynamically adjust bucket size
+        const buySize = holdingsLimit - currentAssets.length + sellSymbols.length
 
         //get buysymbols with good performace history
-        const buySymbols = buySize>0 ? symbolPerfHistory.sortByPerf(buyTrades.map((i) => i.symbol)).slice(0, buySize) : []
+        const buySymbols = buySize > 0 ? symbolPerfHistory.sortByPerf(buyTrades).slice(0, buySize) : []
 
-        if ( buySymbols.length || sellSymbols.length) {
+        if (buySymbols.length || sellSymbols.length) {
             const { earnings, boughtSymbols, soldSymbols } = await makeTrades(sellSymbols, buySymbols)
 
             const holdSymbols = [...boughtSymbols, ...currentAssets.filter((s) => !soldSymbols.includes(s))]

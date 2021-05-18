@@ -1,24 +1,14 @@
-import * as R from 'ramda'
 import { ITicker } from '../db/models'
-import { IPrice } from '../db/models/price'
-import { assetEMAChange, AlgoStrategy } from './ema.algo'
-import smartbounds from './smartbounds'
+import * as EMA from './ema.algo'
+import * as MACD from './macd.algo'
+import * as RSI from './rsi.algo'
+import * as MACD_EMA from './macd-ema.algo'
 
-type symbolEMAChange = { symbol: string; wmaChange: number }
-
-/** helper functions */
-
-const sortByVolume = (a: IPrice, b: IPrice) => b.volume * b.lastPrice - a.volume * a.lastPrice
-const getTop50 = R.compose(R.slice(0, 50), R.sort(sortByVolume))
-
-/**
- * returns top 40 symbols by dollar trade volume
- */
-function getTop50Symbols(priceList: IPrice[]) {
-    return R.compose(
-        R.map((x) => x['symbol']),
-        getTop50
-    )(priceList)
+export enum ALGO_STRATEGY {
+    EMA = 'EMA',
+    MACD = 'MACD',
+    RSI = 'RSI',
+    MACD_EMA = 'MACD_EMA',
 }
 
 /**
@@ -27,62 +17,37 @@ function getTop50Symbols(priceList: IPrice[]) {
  * @param assets list of symbols that are currently held
  * @returns
  */
-function getGoodTrades(tickers: ITicker[], AlgoStrategy: AlgoStrategy): symbolEMAChange[] {
-    // get top50 symbols by dollar volume
-    const top50Symbols: string[] = getTop50Symbols(tickers[0].priceList)
-
-    //for each symbol get ema percentage change
-    const symbolEMAChangeList: symbolEMAChange[] = []
-    for (let sym of top50Symbols) {
-        try {
-            const symbolPriceList = getPriceListForSymbol(tickers, sym)
-            symbolEMAChangeList.push({ symbol: sym, wmaChange: assetEMAChange(symbolPriceList, AlgoStrategy) })
-        } catch {
-            //ignore error
-        }
+function getGoodTrades(tickers: ITicker[], algoStrategy: ALGO_STRATEGY): string[] {
+    switch (algoStrategy) {
+        case 'EMA':
+            return EMA.getGoodTrades(tickers)
+        case 'MACD':
+            return MACD.getGoodTrades(tickers)
+        case 'RSI':
+            return RSI.getGoodTrades(tickers)
+        case 'MACD_EMA':
+            return MACD_EMA.getGoodTrades(tickers)
     }
-
-    //ratio of market for which 24 change is greater than zero
-    const marketDistribution =
-        tickers[0].priceList.reduce((count, item) => (item.priceChangePercent > 0 ? ++count : count), 0) /
-        tickers[0].priceList.length
-
-    //get smart bounds based on market distribution
-    const [lowerBound, upperBound] = smartbounds.getSmartBounds(marketDistribution)
-
-    //filter trades that have wmaChange with bounds
-    const filterEMAChangeList = R.filter(
-        (a: symbolEMAChange) => a.wmaChange > lowerBound && a.wmaChange < upperBound
-    )(symbolEMAChangeList)
-
-    //get top 10 performing symbols
-    const topPerformers = (R.compose(
-        R.slice(0, 18),
-        R.sort((a: symbolEMAChange, b: symbolEMAChange) => a.wmaChange - b.wmaChange)
-    )(filterEMAChangeList) as unknown) as symbolEMAChange[]
-    return topPerformers
 }
 
 /**
  *
  * @param tickers
  * @param symbol
+ * @param algoStrategy
  * @returns {boolean}
  */
-function shouldSellAsset(tickers: ITicker[], symbol: string, wmaStrategy: AlgoStrategy) {
-    const symbolPriceList = getPriceListForSymbol(tickers, symbol)
-    return assetEMAChange(symbolPriceList, wmaStrategy) < 0.5
-}
-
-function getPriceListForSymbol(tickers: ITicker[], symbol: string) {
-    return tickers.map((t) => t.priceList.find((p) => p.symbol == symbol).avgPrice5min)
-}
-
-function getPriceMap(ticker: ITicker) {
-    const priceMap = new Map()
-    ticker.priceList.map((t) => priceMap.set(t.symbol, t.avgPrice5min))
-
-    return priceMap
+function shouldSellAsset(tickers: ITicker[], symbol: string, algoStrategy: ALGO_STRATEGY): boolean {
+    switch (algoStrategy) {
+        case 'EMA':
+            return EMA.shouldSellAsset(tickers, symbol)
+        case 'MACD':
+            return MACD.shouldSellAsset(tickers, symbol)
+        case 'RSI':
+            return RSI.shouldSellAsset(tickers, symbol)
+        case 'MACD_EMA':
+            return MACD_EMA.shouldSellAsset(tickers, symbol)
+    }
 }
 
 export { getGoodTrades, shouldSellAsset }

@@ -16,6 +16,19 @@
         "<node_internals>/**"
       ],
       "type": "node"
+    },
+    {
+      "name": "Run Back Test",
+      "request": "launch",
+      "runtimeArgs": [
+        "run-script",
+        "backtest"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
     }
   ]
 }

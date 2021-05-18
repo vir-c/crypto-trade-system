@@ -1,4 +1,9 @@
-import { map, range, compose, reduce, sum, zipWith, __ } from 'ramda'
+import { map, range, compose, reduce, sum, zipWith, __, slice, sort, filter } from 'ramda'
+import { ITicker } from '../db/models'
+import { IPrice } from '../db/models/price'
+import { getPriceListForSymbol, getTopNSymbols, getPercentchange } from './helpers'
+import smartbounds from './smartbounds'
+
 /*
 For 6
 [
@@ -38,8 +43,6 @@ function getWMA(nums: number[], ws: number[]): number {
     return sum(zipWith(multiply, nums, ws))
 }
 
-const percentchange = (base: number, now: number) => ((now - base) / base) * 100
-
 export type AlgoStrategy = (priceList: number[]) => number
 
 /**
@@ -55,10 +58,10 @@ function createAlgoStrategy(weightFn: (n: any) => number[]) {
             const emaShort = getWMA(priceList, wShort)
             const emaLong = getWMA(priceList, wLong)
 
-            if (!periodMed) return percentchange(emaLong, emaShort)
+            if (!periodMed) return getPercentchange(emaLong, emaShort)
             else {
                 const emaMed = getWMA(priceList, wMed)
-                return 0.6 * percentchange(emaMed, emaShort) + 0.4 * percentchange(emaLong, emaShort)
+                return 0.6 * getPercentchange(emaMed, emaShort) + 0.4 * getPercentchange(emaLong, emaShort)
             }
         }
     }
@@ -76,4 +79,68 @@ const algoStrategy = {
     wma: createAlgoStrategy(getNWeightsForWMA),
 }
 
-export { getWMA, getWeights, algoStrategy, assetEMAChange }
+const buyAlgoStrategy = algoStrategy.ema(24, 96)
+const sellAlgoStrategy = algoStrategy.ema(12, 30)
+
+type symbolEMAChange = { symbol: string; wmaChange: number }
+
+const isSellSignal = (symbolPriceList: number[]): boolean => {
+    return assetEMAChange(symbolPriceList, sellAlgoStrategy) < 0.5
+}
+
+/**
+ * returns 15 symbols that have strong updward indication according to WMA algo
+ * @param tickers
+ * @param assets list of symbols that are currently held
+ * @returns
+ */
+function getGoodTrades(tickers: ITicker[]): string[] {
+    // get top50 symbols by dollar volume
+    const top50Symbols: string[] = getTopNSymbols(tickers[0].priceList, 60)
+
+    //for each symbol get ema percentage change
+    const symbolEMAChangeList: symbolEMAChange[] = []
+    for (let sym of top50Symbols) {
+        try {
+            const symbolPriceList = getPriceListForSymbol(tickers, sym)
+            symbolEMAChangeList.push({ symbol: sym, wmaChange: assetEMAChange(symbolPriceList, buyAlgoStrategy) })
+        } catch {
+            //ignore error
+        }
+    }
+
+    //ratio of market for which 24 change is greater than zero
+    const marketDistribution =
+        tickers[0].priceList.reduce((count, item) => (item.priceChangePercent > 0 ? ++count : count), 0) /
+        tickers[0].priceList.length
+
+    //get smart bounds based on market distribution
+    const [lowerBound, upperBound] = smartbounds.getSmartBounds(marketDistribution)
+
+    //filter trades that have wmaChange with bounds
+    const filterEMAChangeList = filter(
+        (a: symbolEMAChange) => a.wmaChange > lowerBound && a.wmaChange < upperBound
+    )(symbolEMAChangeList)
+
+    //get top 10 performing symbols
+    const topPerformers = compose(
+        map((s: symbolEMAChange) => s.symbol),
+        slice(0, 18),
+        sort((a: symbolEMAChange, b: symbolEMAChange) => a.wmaChange - b.wmaChange)
+    )(filterEMAChangeList)
+
+    return topPerformers
+}
+
+/**
+ *
+ * @param tickers
+ * @param symbol
+ * @returns {boolean}
+ */
+function shouldSellAsset(tickers: ITicker[], symbol: string) {
+    const symbolPriceList = getPriceListForSymbol(tickers, symbol)
+    return assetEMAChange(symbolPriceList, sellAlgoStrategy) < 0.5
+}
+
+export { getGoodTrades, shouldSellAsset, isSellSignal }
