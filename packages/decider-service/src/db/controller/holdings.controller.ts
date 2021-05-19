@@ -32,7 +32,9 @@ async function getPL(date: Date): Promise<{ holdings: string; pl: number }> {
     return HoldingsModel.find({ date: { $gt: date } })
         .sort({ $natural: -1 })
         .then((data: IHoldings[]) => {
-            const currHoldings = data[0].assets.join(', ').slice(0, -1)
+            if (!data.length) return { holdings: '', pl: 0 }
+
+            const currHoldings = data[0].assets.length ? data[0].assets.join(', ').slice(0, -1) : ''
             const pl = data[0].totalPL - data[data.length - 1].totalPL
 
             return { holdings: currHoldings, pl: pl }

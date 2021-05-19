@@ -17,7 +17,7 @@ export async function main() {
             db.controller.holdings.currentHoldings(),
         ])
 
-        const currentAssets = currentHoldings ? currentHoldings.assets : []
+        const currentAssets = currentHoldings?.assets ? currentHoldings.assets : []
 
         const sellSymbols = currentAssets.filter((sym) => shouldSellAsset(tickers, sym, sellAlgoStrategy)) || []
 
@@ -33,7 +33,7 @@ export async function main() {
         const buySize = holdingsLimit - currentAssets.length + sellSymbols.length
 
         //get buysymbols with good performace history
-        const buySymbols = buySize > 0 ? symbolPerfHistory.sortByPerf(buyTrades).slice(0, buySize) : []
+        const buySymbols = buySize > 0 ? buyTrades.slice(0, buySize) : []
 
         if (buySymbols.length || sellSymbols.length) {
             const { earnings, boughtSymbols, soldSymbols } = await makeTrades(sellSymbols, buySymbols)

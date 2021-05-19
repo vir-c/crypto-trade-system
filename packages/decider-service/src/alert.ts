@@ -11,12 +11,13 @@ const error = (message: string) => {
 const dailyPL = async () => {
     const dateTime12HrsBefore = new Date(new Date(new Date().getTime() - 3 * 60 * 60 * 1000))
 
-    const { holdings } = await db.controller.holdings.getPL(dateTime12HrsBefore)
+    const { holdings, pl } = await db.controller.holdings.getPL(dateTime12HrsBefore)
     const accountValue = await binance.getAccountValue()
 
     const message = ` 
     __*Info Alert:*__  ${getTime()}
 
+    Profit/Loss: ${pl}
     current holdings: ${holdings}
     
     Account Value: ${accountValue}
