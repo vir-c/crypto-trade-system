@@ -13,7 +13,7 @@ const sellAlgoStrategy = ALGO_STRATEGY.MACD
 export async function main() {
     try {
         const [tickers, currentHoldings] = await Promise.all([
-            db.controller.ticker.getTickers(96),
+            db.controller.ticker.getTickers(120),
             db.controller.holdings.currentHoldings(),
         ])
 
