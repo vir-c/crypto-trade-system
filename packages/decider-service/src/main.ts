@@ -17,6 +17,8 @@ export async function main() {
             db.controller.holdings.currentHoldings(),
         ])
 
+        if (tickers.length < 120) return
+
         const currentAssets = currentHoldings?.assets ? currentHoldings.assets : []
 
         const sellSymbols = currentAssets.filter((sym) => shouldSellAsset(tickers, sym, sellAlgoStrategy)) || []
