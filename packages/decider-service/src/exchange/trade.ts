@@ -18,7 +18,7 @@ async function sellAsset(symbol: string): Promise<{ symbol: string; pl: number }
 
     const orderInfo = await binance.sellAsset(symbol, tradeData.quantity)
 
-    const pl = (orderInfo.price - tradeData.price) * orderInfo.quantity
+    const pl = orderInfo.price * orderInfo.quantity - tradeData.quantity * tradeData.price
 
     await db.controller.trades.addTrade({
         symbol: symbol,

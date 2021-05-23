@@ -34,10 +34,10 @@ const getHoldingsSize = (tickers: ITicker[]): number => {
 
     if (val < 0.3) return 0
     if (val < 0.4) return 2
-    if (val < 0.5) return 4
-    if (val < 0.6) return 5
-    if (val < 0.7) return 6
-    if (val < 0.8) return 7
+    if (val < 0.5) return 3
+    if (val < 0.6) return 4
+    if (val < 0.7) return 5
+    if (val < 0.8) return 5
     else return 5
 }
 
